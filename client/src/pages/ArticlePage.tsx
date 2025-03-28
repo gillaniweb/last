@@ -9,7 +9,7 @@ import CategoryToolbar from "@/components/CategoryToolbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Article, Category, Author } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
-import { Facebook, Twitter, Linkedin, Mail, Bookmark, Share2, Smartphone } from "lucide-react";
+import { Facebook, Twitter, Linkedin, Mail, Bookmark, Share2, Smartphone, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu,
@@ -82,6 +82,13 @@ const ArticlePage = () => {
     window.open(url, '_blank');
   };
   
+  const handleShareInstagram = () => {
+    // Instagram doesn't have a direct sharing API like others
+    // Usually this would copy the link to clipboard and open Instagram
+    alert('Instagram link copied! You can now share it in your Instagram story or post.');
+    navigator.clipboard.writeText(getArticleUrl());
+  };
+  
   const handleBookmark = () => {
     // This would typically save to user's bookmarks in a real application
     alert('Article bookmarked!');
@@ -149,10 +156,22 @@ const ArticlePage = () => {
                         <Share2 size={16} className="text-gray-600" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-40">
+                    <DropdownMenuContent align="end" className="w-52">
                       <DropdownMenuItem onClick={handleShareWhatsApp} className="cursor-pointer">
                         <Smartphone className="h-4 w-4 mr-2" />
                         WhatsApp
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleShareFacebook} className="cursor-pointer">
+                        <Facebook className="h-4 w-4 mr-2 text-[#1877F2]" />
+                        Facebook
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleShareTwitter} className="cursor-pointer">
+                        <Twitter className="h-4 w-4 mr-2 text-[#1DA1F2]" />
+                        Twitter
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleShareInstagram} className="cursor-pointer">
+                        <Instagram className="h-4 w-4 mr-2 text-[#E4405F]" />
+                        Instagram
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

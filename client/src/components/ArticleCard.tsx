@@ -1,7 +1,7 @@
 import { Link } from "wouter";
 import { Article } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
-import { Bookmark, Share2, Smartphone } from "lucide-react";
+import { Bookmark, Share2, Smartphone, Facebook, Twitter, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { Category } from "@shared/schema";
@@ -29,13 +29,40 @@ const ArticleCard = ({ article, showCategory = true, showBookmarkShare = true }:
     return category ? category.name : "News";
   };
   
+  const getArticleUrl = () => {
+    return `${window.location.origin}/article/${article.slug}`;
+  };
+
   const handleShareWhatsApp = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Construct article URL
-    const articleUrl = `${window.location.origin}/article/${article.slug}`;
-    // WhatsApp share URL
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(article.title + ' - ' + articleUrl)}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(article.title + ' - ' + getArticleUrl())}`;
     window.open(whatsappUrl, '_blank');
+  };
+  
+  const handleShareFacebook = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getArticleUrl())}`;
+    window.open(url, '_blank', 'width=600,height=400');
+  };
+  
+  const handleShareTwitter = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(getArticleUrl())}&text=${encodeURIComponent(article.title)}`;
+    window.open(url, '_blank', 'width=600,height=400');
+  };
+  
+  const handleShareInstagram = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // Instagram doesn't have a direct sharing API like others
+    // Usually this would copy the link to clipboard and open Instagram
+    alert('Instagram link copied! You can now share it in your Instagram story or post.');
+    navigator.clipboard.writeText(getArticleUrl());
+  };
+  
+  const handleBookmark = (e: React.MouseEvent) => {
+    e.preventDefault();
+    // This would typically save to user's bookmarks in a real application
+    alert('Article bookmarked!');
   };
   
   return (
@@ -66,7 +93,7 @@ const ArticleCard = ({ article, showCategory = true, showBookmarkShare = true }:
           <span>{formatDistanceToNow(new Date(article.publishedAt), { addSuffix: true })}</span>
           {showBookmarkShare && (
             <div className="flex space-x-2">
-              <Button variant="ghost" size="icon" className="h-6 w-6 hover:text-[#B80000]">
+              <Button variant="ghost" size="icon" className="h-6 w-6 hover:text-[#B80000]" onClick={handleBookmark}>
                 <Bookmark className="h-4 w-4" />
               </Button>
               <DropdownMenu>
@@ -75,10 +102,22 @@ const ArticleCard = ({ article, showCategory = true, showBookmarkShare = true }:
                     <Share2 className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuContent align="end" className="w-52">
                   <DropdownMenuItem onClick={handleShareWhatsApp} className="cursor-pointer">
                     <Smartphone className="h-4 w-4 mr-2" />
                     WhatsApp
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleShareFacebook} className="cursor-pointer">
+                    <Facebook className="h-4 w-4 mr-2 text-[#1877F2]" />
+                    Facebook
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleShareTwitter} className="cursor-pointer">
+                    <Twitter className="h-4 w-4 mr-2 text-[#1DA1F2]" />
+                    Twitter
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleShareInstagram} className="cursor-pointer">
+                    <Instagram className="h-4 w-4 mr-2 text-[#E4405F]" />
+                    Instagram
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
