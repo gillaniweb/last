@@ -7,6 +7,7 @@ import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
 import ArticleCard from "@/components/ArticleCard";
 import SkeletonLoading from "@/components/SkeletonLoading";
+import CategoryToolbar from "@/components/CategoryToolbar";
 import { Article } from "@shared/schema";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ const SearchPage = () => {
   return (
     <>
       <Header />
+      <CategoryToolbar />
       <BreakingNewsBanner />
       <main className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

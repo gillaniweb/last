@@ -3,11 +3,13 @@ import { AlertCircle } from "lucide-react";
 import { Link } from "wouter";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import CategoryToolbar from "@/components/CategoryToolbar";
 
 export default function NotFound() {
   return (
     <>
       <Header />
+      <CategoryToolbar />
       <div className="min-h-[70vh] w-full flex items-center justify-center bg-gray-50 py-16">
         <Card className="w-full max-w-md mx-4">
           <CardContent className="pt-6">

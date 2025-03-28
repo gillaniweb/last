@@ -7,6 +7,7 @@ import ArticleCard from "@/components/ArticleCard";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
 import SkeletonLoading from "@/components/SkeletonLoading";
+import CategoryToolbar from "@/components/CategoryToolbar";
 import { Category, Article } from "@shared/schema";
 
 const CategoryPage = () => {
@@ -39,6 +40,7 @@ const CategoryPage = () => {
   return (
     <>
       <Header />
+      <CategoryToolbar />
       <BreakingNewsBanner />
       <main className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
