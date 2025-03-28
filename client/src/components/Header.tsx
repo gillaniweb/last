@@ -4,8 +4,9 @@ import { Link, useLocation } from "wouter";
 import { Category } from "@shared/schema";
 import { useMediaQuery } from "@/lib/hooks";
 import MobileMenu from "./MobileMenu";
-import { Search, User, Menu } from "lucide-react";
+import { Search, User, Menu, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const Header = () => {
   const [location] = useLocation();
@@ -35,6 +36,20 @@ const Header = () => {
             <Link href="/search" className="text-gray-800 hover:text-[#B80000]">
               <Search size={20} />
             </Link>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link href="/notifications" 
+                    className={`text-gray-800 hover:text-[#B80000] ${location === '/notifications' ? 'text-[#B80000]' : ''}`}
+                  >
+                    <Bell size={20} />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Notification settings</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <Button
               variant="ghost"
               className="text-gray-800 hover:text-[#B80000] p-0"

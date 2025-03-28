@@ -5,7 +5,9 @@ import {
   relatedStories, type RelatedStory, type InsertRelatedStory,
   users, type User, type InsertUser,
   comments, type Comment, type InsertComment,
-  images, type Image, type InsertImage
+  images, type Image, type InsertImage,
+  pushSubscriptions, type PushSubscription, type InsertPushSubscription,
+  type PushNotification
 } from "@shared/schema";
 
 export interface IStorage {
@@ -52,6 +54,13 @@ export interface IStorage {
   // Related stories methods
   getRelatedStories(articleId: number): Promise<Article[]>;
   addRelatedStory(relatedStory: InsertRelatedStory): Promise<RelatedStory>;
+  
+  // Push notification methods
+  createPushSubscription(subscription: InsertPushSubscription): Promise<PushSubscription>;
+  getPushSubscriptionByEndpoint(endpoint: string): Promise<PushSubscription | undefined>;
+  getAllPushSubscriptions(): Promise<PushSubscription[]>;
+  getPushSubscriptionsByCategory(category: string): Promise<PushSubscription[]>;
+  deletePushSubscription(endpoint: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -62,6 +71,7 @@ export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private comments: Map<number, Comment>;
   private images: Map<number, Image>;
+  private pushSubscriptions: Map<number, PushSubscription>;
   
   private categoryId: number;
   private articleId: number;
@@ -70,6 +80,7 @@ export class MemStorage implements IStorage {
   private userId: number;
   private commentId: number;
   private imageId: number;
+  private pushSubscriptionId: number;
   
   constructor() {
     this.categories = new Map();
@@ -79,6 +90,7 @@ export class MemStorage implements IStorage {
     this.users = new Map();
     this.comments = new Map();
     this.images = new Map();
+    this.pushSubscriptions = new Map();
     
     this.categoryId = 1;
     this.articleId = 1;
@@ -87,6 +99,7 @@ export class MemStorage implements IStorage {
     this.userId = 1;
     this.commentId = 1;
     this.imageId = 1;
+    this.pushSubscriptionId = 1;
     
     // Initialize with default data
     this.initDefaultData();
@@ -321,6 +334,49 @@ export class MemStorage implements IStorage {
     const newRelatedStory: RelatedStory = { ...relatedStory, id };
     this.relatedStories.set(id, newRelatedStory);
     return newRelatedStory;
+  }
+
+  // Push notification subscription methods
+  async createPushSubscription(subscription: InsertPushSubscription): Promise<PushSubscription> {
+    const id = this.pushSubscriptionId++;
+    const newSubscription = {
+      endpoint: subscription.endpoint,
+      p256dh: subscription.p256dh,
+      auth: subscription.auth,
+      userId: subscription.userId || null,
+      categories: subscription.categories || [],
+      id,
+      createdAt: new Date(),
+    } as PushSubscription;
+    
+    this.pushSubscriptions.set(id, newSubscription);
+    return newSubscription;
+  }
+
+  async getPushSubscriptionByEndpoint(endpoint: string): Promise<PushSubscription | undefined> {
+    return Array.from(this.pushSubscriptions.values()).find(
+      subscription => subscription.endpoint === endpoint
+    );
+  }
+
+  async getAllPushSubscriptions(): Promise<PushSubscription[]> {
+    return Array.from(this.pushSubscriptions.values());
+  }
+
+  async getPushSubscriptionsByCategory(category: string): Promise<PushSubscription[]> {
+    return Array.from(this.pushSubscriptions.values())
+      .filter(subscription => 
+        !subscription.categories || 
+        subscription.categories.length === 0 || 
+        subscription.categories.includes(category)
+      );
+  }
+
+  async deletePushSubscription(endpoint: string): Promise<boolean> {
+    const subscription = await this.getPushSubscriptionByEndpoint(endpoint);
+    if (!subscription) return false;
+    
+    return this.pushSubscriptions.delete(subscription.id);
   }
 }
 

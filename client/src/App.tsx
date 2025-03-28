@@ -7,6 +7,7 @@ import HomePage from "@/pages/HomePage";
 import CategoryPage from "@/pages/CategoryPage";
 import ArticlePage from "@/pages/ArticlePage";
 import SearchPage from "@/pages/SearchPage";
+import NotificationsPage from "@/pages/NotificationsPage";
 import { useEffect } from "react";
 import { apiRequest } from "./lib/queryClient";
 
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/category/:slug" component={CategoryPage} />
       <Route path="/article/:slug" component={ArticlePage} />
       <Route path="/search" component={SearchPage} />
+      <Route path="/notifications" component={NotificationsPage} />
       <Route component={NotFound} />
     </Switch>
   );

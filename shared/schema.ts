@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, varchar, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, varchar, boolean, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -97,4 +97,35 @@ export type InsertComment = z.infer<typeof insertCommentSchema>;
 
 export type Image = typeof images.$inferSelect;
 export type InsertImage = z.infer<typeof insertImageSchema>;
+
+// Push notification subscriptions table
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: serial("id").primaryKey(),
+  endpoint: text("endpoint").notNull().unique(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  userId: integer("user_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  categories: text("categories").array(),
+});
+
+export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions).omit({ 
+  id: true, 
+  createdAt: true
+});
+
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
+
+// Push notification message schema for sending notifications
+export const pushNotificationSchema = z.object({
+  title: z.string(),
+  body: z.string(),
+  icon: z.string().optional(),
+  badge: z.string().optional(),
+  url: z.string().optional(),
+  category: z.string().optional(),
+});
+
+export type PushNotification = z.infer<typeof pushNotificationSchema>;
 

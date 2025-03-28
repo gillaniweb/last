@@ -2,7 +2,7 @@ import { useRef, useEffect } from "react";
 import { Link } from "wouter";
 import { Category } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, Bell, Search, User } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface MobileMenuProps {
@@ -43,6 +43,20 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
           </div>
           
           <nav className="mb-6 flex-grow overflow-y-auto">
+            <div className="flex space-x-4 justify-between px-2 py-3 border-b border-gray-200 mb-2">
+              <Link href="/search" className="flex items-center text-gray-800" onClick={onClose}>
+                <Search size={18} className="mr-1" />
+                <span>Search</span>
+              </Link>
+              <Link href="/notifications" className="flex items-center text-gray-800" onClick={onClose}>
+                <Bell size={18} className="mr-1" />
+                <span>Notifications</span>
+              </Link>
+              <button className="flex items-center text-gray-800">
+                <User size={18} className="mr-1" />
+                <span>Account</span>
+              </button>
+            </div>
             <ul className="space-y-0">
               <li>
                 <Link 

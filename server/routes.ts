@@ -2,7 +2,13 @@ import { Express, Request, Response, NextFunction } from "express";
 import { Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
-import { insertArticleSchema, insertAuthorSchema, insertCategorySchema, insertCommentSchema, insertRelatedStorySchema, insertUserSchema } from "../shared/schema";
+import { 
+  insertArticleSchema, insertAuthorSchema, insertCategorySchema, 
+  insertCommentSchema, insertRelatedStorySchema, insertUserSchema,
+  insertPushSubscriptionSchema, pushNotificationSchema,
+  type PushNotification, type PushSubscription
+} from "../shared/schema";
+import webpush from "web-push";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create an HTTP server instance but don't start listening yet
@@ -473,6 +479,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to delete image" });
     }
   });
+
+  // VAPID keys should be generated using web-push npm module
+  // For production, these should be stored in environment variables
+  const vapidKeys = {
+    publicKey: process.env.VAPID_PUBLIC_KEY || 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuBkr3qBUYIHBQFLXYp5Nksh8U',
+    privateKey: process.env.VAPID_PRIVATE_KEY || 'UUxI4O8-FbRouAevSmBQ6o18hgE4nSG3qwvJTfKc-ls'
+  };
+
+  webpush.setVapidDetails(
+    'mailto:admin@bbcnews.example.com',
+    vapidKeys.publicKey,
+    vapidKeys.privateKey
+  );
+
+  // GET the public VAPID key
+  app.get('/api/push/vapidPublicKey', (req: Request, res: Response) => {
+    res.json({ publicKey: vapidKeys.publicKey });
+  });
+
+  // POST to subscribe to push notifications
+  app.post('/api/push/subscribe', async (req: Request, res: Response) => {
+    try {
+      const subscription = req.body;
+      const validatedData = insertPushSubscriptionSchema.parse(subscription);
+      
+      // Check if the subscription already exists
+      const existingSubscription = await storage.getPushSubscriptionByEndpoint(validatedData.endpoint);
+      
+      if (existingSubscription) {
+        return res.status(200).json({ message: 'Subscription already exists' });
+      }
+      
+      // Save the subscription
+      const savedSubscription = await storage.createPushSubscription(validatedData);
+      res.status(201).json({ message: 'Subscription added successfully', subscription: savedSubscription });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: 'Invalid subscription data', errors: error.errors });
+      }
+      res.status(500).json({ message: 'Failed to save subscription' });
+    }
+  });
+
+  // DELETE to unsubscribe from push notifications
+  app.delete('/api/push/unsubscribe', async (req: Request, res: Response) => {
+    try {
+      const { endpoint } = req.body;
+      
+      if (!endpoint) {
+        return res.status(400).json({ message: 'Endpoint is required' });
+      }
+      
+      const success = await storage.deletePushSubscription(endpoint);
+      
+      if (!success) {
+        return res.status(404).json({ message: 'Subscription not found' });
+      }
+      
+      res.status(200).json({ message: 'Subscription deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to delete subscription' });
+    }
+  });
+
+  // POST to send a notification to all subscribers
+  app.post('/api/push/send', async (req: Request, res: Response) => {
+    try {
+      const notification = pushNotificationSchema.parse(req.body);
+      const subscriptions = await storage.getAllPushSubscriptions();
+      
+      if (subscriptions.length === 0) {
+        return res.status(404).json({ message: 'No active subscriptions found' });
+      }
+      
+      const sentCount = await sendPushNotifications(subscriptions, notification);
+      
+      res.status(200).json({ 
+        message: `Notifications sent successfully to ${sentCount} subscribers`,
+        totalSubscribers: subscriptions.length
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: 'Invalid notification data', errors: error.errors });
+      }
+      res.status(500).json({ message: 'Failed to send notifications' });
+    }
+  });
+
+  // POST to send a notification to subscribers of a specific category
+  app.post('/api/push/send/:category', async (req: Request, res: Response) => {
+    try {
+      const { category } = req.params;
+      const notification = pushNotificationSchema.parse(req.body);
+      
+      const subscriptions = await storage.getPushSubscriptionsByCategory(category);
+      
+      if (subscriptions.length === 0) {
+        return res.status(404).json({ message: `No active subscriptions found for category: ${category}` });
+      }
+      
+      const sentCount = await sendPushNotifications(subscriptions, notification);
+      
+      res.status(200).json({ 
+        message: `Notifications sent successfully to ${sentCount} subscribers for category: ${category}`,
+        totalSubscribers: subscriptions.length
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: 'Invalid notification data', errors: error.errors });
+      }
+      res.status(500).json({ message: 'Failed to send notifications' });
+    }
+  });
+
+  // Helper function to send push notifications
+  async function sendPushNotifications(subscriptions: PushSubscription[], notification: PushNotification): Promise<number> {
+    let sentCount = 0;
+    
+    const notificationPromises = subscriptions.map(async (subscription) => {
+      try {
+        await webpush.sendNotification(
+          {
+            endpoint: subscription.endpoint,
+            keys: {
+              p256dh: subscription.p256dh,
+              auth: subscription.auth
+            }
+          }, 
+          JSON.stringify(notification)
+        );
+        sentCount++;
+      } catch (error) {
+        console.error('Error sending notification:', error);
+        // If the subscription is invalid, we should remove it
+        if (typeof error === 'object' && error !== null && 'statusCode' in error && error.statusCode === 410) {
+          await storage.deletePushSubscription(subscription.endpoint);
+        }
+      }
+    });
+    
+    await Promise.all(notificationPromises);
+    return sentCount;
+  }
   
   return httpServer;
 }
