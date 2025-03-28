@@ -9,8 +9,14 @@ import CategoryToolbar from "@/components/CategoryToolbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Article, Category, Author } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
-import { Facebook, Twitter, Linkedin, Mail, Bookmark, Share2 } from "lucide-react";
+import { Facebook, Twitter, Linkedin, Mail, Bookmark, Share2, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 const ArticlePage = () => {
   const [match, params] = useRoute<{ slug: string }>("/article/:slug");
@@ -43,6 +49,43 @@ const ArticlePage = () => {
   
   const category = categories?.find(c => article && c.id === article.categoryId);
   const author = authors?.find(a => article && a.id === article.authorId);
+  
+  // Share functionality
+  const getArticleUrl = () => {
+    if (!article) return "";
+    return `${window.location.origin}/article/${article.slug}`;
+  };
+  
+  const handleShareFacebook = () => {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getArticleUrl())}`;
+    window.open(url, '_blank', 'width=600,height=400');
+  };
+  
+  const handleShareTwitter = () => {
+    const url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(getArticleUrl())}&text=${encodeURIComponent(article?.title || '')}`;
+    window.open(url, '_blank', 'width=600,height=400');
+  };
+  
+  const handleShareLinkedin = () => {
+    const url = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(getArticleUrl())}&title=${encodeURIComponent(article?.title || '')}`;
+    window.open(url, '_blank', 'width=600,height=400');
+  };
+  
+  const handleShareEmail = () => {
+    const subject = encodeURIComponent(article?.title || 'Interesting article');
+    const body = encodeURIComponent(`${article?.title || 'Interesting article'}\n\nRead more at: ${getArticleUrl()}`);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+  
+  const handleShareWhatsApp = () => {
+    const url = `https://wa.me/?text=${encodeURIComponent((article?.title || '') + ' - ' + getArticleUrl())}`;
+    window.open(url, '_blank');
+  };
+  
+  const handleBookmark = () => {
+    // This would typically save to user's bookmarks in a real application
+    alert('Article bookmarked!');
+  };
   
   return (
     <>
@@ -84,24 +127,35 @@ const ArticlePage = () => {
                 
                 {/* Social Share */}
                 <div className="flex space-x-2 mb-6">
-                  <Button variant="outline" size="icon" className="rounded-full h-8 w-8">
+                  <Button variant="outline" size="icon" className="rounded-full h-8 w-8" onClick={handleShareFacebook}>
                     <Facebook size={16} className="text-[#1877F2]" />
                   </Button>
-                  <Button variant="outline" size="icon" className="rounded-full h-8 w-8">
+                  <Button variant="outline" size="icon" className="rounded-full h-8 w-8" onClick={handleShareTwitter}>
                     <Twitter size={16} className="text-[#1DA1F2]" />
                   </Button>
-                  <Button variant="outline" size="icon" className="rounded-full h-8 w-8">
+                  <Button variant="outline" size="icon" className="rounded-full h-8 w-8" onClick={handleShareLinkedin}>
                     <Linkedin size={16} className="text-[#0A66C2]" />
                   </Button>
-                  <Button variant="outline" size="icon" className="rounded-full h-8 w-8">
+                  <Button variant="outline" size="icon" className="rounded-full h-8 w-8" onClick={handleShareEmail}>
                     <Mail size={16} className="text-gray-600" />
                   </Button>
-                  <Button variant="outline" size="icon" className="rounded-full h-8 w-8">
+                  <Button variant="outline" size="icon" className="rounded-full h-8 w-8" onClick={handleBookmark}>
                     <Bookmark size={16} className="text-gray-600" />
                   </Button>
-                  <Button variant="outline" size="icon" className="rounded-full h-8 w-8">
-                    <Share2 size={16} className="text-gray-600" />
-                  </Button>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="icon" className="rounded-full h-8 w-8">
+                        <Share2 size={16} className="text-gray-600" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuItem onClick={handleShareWhatsApp} className="cursor-pointer">
+                        <Smartphone className="h-4 w-4 mr-2" />
+                        WhatsApp
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
                 
                 {/* Featured Image */}
