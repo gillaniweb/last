@@ -12,6 +12,22 @@ export interface IStorage {
   createCategory(category: InsertCategory): Promise<Category>;
   
   // Article methods
+
+  // User methods
+  createUser(user: InsertUser): Promise<User>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserById(id: number): Promise<User | undefined>;
+  
+  // Comment methods
+  createComment(comment: InsertComment): Promise<Comment>;
+  getCommentsByArticle(articleId: number): Promise<Comment[]>;
+  deleteComment(id: number): Promise<boolean>;
+  
+  // Image methods
+  createImage(image: InsertImage): Promise<Image>;
+  getImagesByArticle(articleId: number): Promise<Image[]>;
+  deleteImage(id: number): Promise<boolean>;
+
   getArticles(limit?: number, offset?: number): Promise<Article[]>;
   getArticlesByCategory(categoryId: number, limit?: number, offset?: number): Promise<Article[]>;
   getArticlesByAuthor(authorId: number, limit?: number, offset?: number): Promise<Article[]>;
@@ -164,6 +180,75 @@ export class MemStorage implements IStorage {
   
   async deleteArticle(id: number): Promise<boolean> {
     return this.articles.delete(id);
+
+  private users: Map<number, User>;
+  private comments: Map<number, Comment>;
+  private images: Map<number, Image>;
+  private userId: number;
+  private commentId: number;
+  private imageId: number;
+
+  constructor() {
+    this.users = new Map();
+    this.comments = new Map();
+    this.images = new Map();
+    this.userId = 1;
+    this.commentId = 1;
+    this.imageId = 1;
+  }
+
+  // User methods
+  async createUser(user: InsertUser): Promise<User> {
+    const id = this.userId++;
+    const newUser: User = { ...user, id, createdAt: new Date() };
+    this.users.set(id, newUser);
+    return newUser;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.email === email);
+  }
+
+  async getUserById(id: number): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  // Comment methods
+  async createComment(comment: InsertComment): Promise<Comment> {
+    const id = this.commentId++;
+    const newComment: Comment = { ...comment, id, createdAt: new Date() };
+    this.comments.set(id, newComment);
+    return newComment;
+  }
+
+  async getCommentsByArticle(articleId: number): Promise<Comment[]> {
+    return Array.from(this.comments.values())
+      .filter(comment => comment.articleId === articleId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async deleteComment(id: number): Promise<boolean> {
+    return this.comments.delete(id);
+  }
+
+  // Image methods
+  async createImage(image: InsertImage): Promise<Image> {
+    const id = this.imageId++;
+    const newImage: Image = { ...image, id, uploadedAt: new Date() };
+    this.images.set(id, newImage);
+    return newImage;
+  }
+
+  async getImagesByArticle(articleId: number): Promise<Image[]> {
+    return Array.from(this.images.values())
+      .filter(image => image.articleId === articleId)
+      .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
+  }
+
+  async deleteImage(id: number): Promise<boolean> {
+    return this.images.delete(id);
+  }
+
   }
   
   async searchArticles(query: string, limit = 10): Promise<Article[]> {

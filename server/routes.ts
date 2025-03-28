@@ -312,6 +312,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
           title: "Major Trade Deal Signed Between Asian and European Nations",
           slug: "trade-deal-asia-europe",
           summary: "The historic agreement eliminates tariffs on thousands of products and creates the world's largest free trade zone",
+
+  // Auth routes
+  app.post("/api/auth/register", async (req: Request, res: Response) => {
+    try {
+      const validatedData = insertUserSchema.parse(req.body);
+      const existingUser = await storage.getUserByEmail(validatedData.email);
+      
+      if (existingUser) {
+        return res.status(400).json({ message: "Email already registered" });
+      }
+      
+      const user = await storage.createUser(validatedData);
+      res.status(201).json({ id: user.id, email: user.email, name: user.name });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid user data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to register user" });
+    }
+  });
+
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body;
+      const user = await storage.getUserByEmail(email);
+      
+      if (!user || user.password !== password) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      res.json({ id: user.id, email: user.email, name: user.name });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to login" });
+    }
+  });
+
+  // Comments routes
+  app.get("/api/articles/:articleId/comments", async (req: Request, res: Response) => {
+    try {
+      const articleId = parseInt(req.params.articleId);
+      const comments = await storage.getCommentsByArticle(articleId);
+      res.json(comments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  app.post("/api/articles/:articleId/comments", async (req: Request, res: Response) => {
+    try {
+      const articleId = parseInt(req.params.articleId);
+      const validatedData = insertCommentSchema.parse({ ...req.body, articleId });
+      const comment = await storage.createComment(validatedData);
+      res.status(201).json(comment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid comment data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create comment" });
+    }
+  });
+
+  app.delete("/api/comments/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteComment(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete comment" });
+    }
+  });
+
+  // Image upload routes
+  app.post("/api/articles/:articleId/images", async (req: Request, res: Response) => {
+    try {
+      const articleId = parseInt(req.params.articleId);
+      const { url } = req.body;
+      
+      if (!url) {
+        return res.status(400).json({ message: "Image URL is required" });
+      }
+      
+      const image = await storage.createImage({ url, articleId });
+      res.status(201).json(image);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to upload image" });
+    }
+  });
+
+  app.get("/api/articles/:articleId/images", async (req: Request, res: Response) => {
+    try {
+      const articleId = parseInt(req.params.articleId);
+      const images = await storage.getImagesByArticle(articleId);
+      res.json(images);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch images" });
+    }
+  });
+
+  app.delete("/api/images/:id", async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteImage(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Image not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete image" });
+    }
+  });
+
           content: "After years of negotiations, representatives from 15 Asian and European nations have signed a landmark trade agreement that analysts say will reshape global commerce...",
           imageUrl: "https://images.pexels.com/photos/6615076/pexels-photo-6615076.jpeg",
           authorId: rebeccaLiu.id,
