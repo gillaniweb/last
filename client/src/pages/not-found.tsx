@@ -22,10 +22,8 @@ export default function NotFound() {
               The page you're looking for doesn't exist or has been moved.
             </p>
             
-            <Link href="/">
-              <a className="inline-block mt-2 px-4 py-2 bg-[#B80000] text-white rounded hover:bg-[#8B0000] transition-colors duration-300 text-sm font-medium">
-                Return to Homepage
-              </a>
+            <Link href="/" className="inline-block mt-2 px-4 py-2 bg-[#B80000] text-white rounded hover:bg-[#8B0000] transition-colors duration-300 text-sm font-medium">
+              Return to Homepage
             </Link>
           </CardContent>
         </Card>

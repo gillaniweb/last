@@ -45,18 +45,22 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
           <nav className="mb-6 flex-grow overflow-y-auto">
             <ul className="space-y-0">
               <li>
-                <Link href="/">
-                  <a className="block p-2 text-[#B80000] font-medium border-b border-gray-200" onClick={onClose}>
-                    Home
-                  </a>
+                <Link 
+                  href="/" 
+                  className="block p-2 text-[#B80000] font-medium border-b border-gray-200" 
+                  onClick={onClose}
+                >
+                  Home
                 </Link>
               </li>
               {categories.map((category) => (
                 <li key={category.id}>
-                  <Link href={`/category/${category.slug}`}>
-                    <a className="block p-2 text-gray-800 hover:text-[#B80000] border-b border-gray-200" onClick={onClose}>
-                      {category.name}
-                    </a>
+                  <Link 
+                    href={`/category/${category.slug}`}
+                    className="block p-2 text-gray-800 hover:text-[#B80000] border-b border-gray-200" 
+                    onClick={onClose}
+                  >
+                    {category.name}
                   </Link>
                 </li>
               ))}

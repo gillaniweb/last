@@ -27,15 +27,13 @@ const Header = () => {
         {/* Top Nav Bar */}
         <div className="flex items-center justify-between py-3 border-b border-gray-200">
           <div className="flex items-center">
-            <Link href="/">
-              <a className="font-bold text-2xl text-[#B80000]">GNN</a>
+            <Link href="/" className="font-bold text-2xl text-[#B80000]">
+              GNN
             </Link>
           </div>
           <div className="hidden md:flex items-center space-x-4">
-            <Link href="/search">
-              <a className="text-gray-800 hover:text-[#B80000]">
-                <Search size={20} />
-              </a>
+            <Link href="/search" className="text-gray-800 hover:text-[#B80000]">
+              <Search size={20} />
             </Link>
             <Button
               variant="ghost"
@@ -66,18 +64,20 @@ const Header = () => {
         <nav className="hidden md:flex py-2 overflow-x-auto">
           <ul className="flex space-x-6">
             <li>
-              <Link href="/">
-                <a className={`${location === '/' ? 'text-[#B80000]' : 'text-gray-800 hover:text-[#B80000]'} font-medium`}>
-                  Home
-                </a>
+              <Link 
+                href="/" 
+                className={`${location === '/' ? 'text-[#B80000]' : 'text-gray-800 hover:text-[#B80000]'} font-medium`}
+              >
+                Home
               </Link>
             </li>
             {!isLoading && categories?.map((category) => (
               <li key={category.id}>
-                <Link href={`/category/${category.slug}`}>
-                  <a className={`${location === `/category/${category.slug}` ? 'text-[#B80000]' : 'text-gray-800 hover:text-[#B80000]'}`}>
-                    {category.name}
-                  </a>
+                <Link 
+                  href={`/category/${category.slug}`}
+                  className={`${location === `/category/${category.slug}` ? 'text-[#B80000]' : 'text-gray-800 hover:text-[#B80000]'}`}
+                >
+                  {category.name}
                 </Link>
               </li>
             ))}

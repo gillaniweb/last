@@ -30,28 +30,25 @@ const CategoryToolbar = () => {
             ) : (
               <>
                 {/* All News Link */}
-                <Link href="/">
-                  <a 
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap
-                      ${location === '/' 
-                        ? 'bg-[#B80000] text-white' 
-                        : 'bg-gray-700 text-white hover:bg-gray-600'}`}
-                  >
-                    All News
-                  </a>
+                <Link href="/" 
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap
+                    ${location === '/' 
+                      ? 'bg-[#B80000] text-white' 
+                      : 'bg-gray-700 text-white hover:bg-gray-600'}`}>
+                  All News
                 </Link>
                 
                 {/* Categories */}
                 {categories?.map((category) => (
-                  <Link key={category.id} href={`/category/${category.slug}`}>
-                    <a 
-                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap
-                        ${isCategoryActive(category.slug) 
-                          ? 'bg-[#B80000] text-white' 
-                          : 'bg-gray-700 text-white hover:bg-gray-600'}`}
-                    >
-                      {category.name}
-                    </a>
+                  <Link 
+                    key={category.id} 
+                    href={`/category/${category.slug}`}
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap
+                      ${isCategoryActive(category.slug) 
+                        ? 'bg-[#B80000] text-white' 
+                        : 'bg-gray-700 text-white hover:bg-gray-600'}`}
+                  >
+                    {category.name}
                   </Link>
                 ))}
               </>
