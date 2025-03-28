@@ -14,8 +14,8 @@ const TopStories = () => {
       <section className="mb-12">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-[#222222]">Top Stories</h2>
-          <Link href="/category/all">
-            <a className="text-[#B80000] hover:underline text-sm font-medium">View All</a>
+          <Link href="/category/all" className="text-[#B80000] hover:underline text-sm font-medium">
+            View All
           </Link>
         </div>
         
@@ -45,8 +45,8 @@ const TopStories = () => {
     <section className="mb-12">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-[#222222]">Top Stories</h2>
-        <Link href="/category/all">
-          <a className="text-[#B80000] hover:underline text-sm font-medium">View All</a>
+        <Link href="/category/all" className="text-[#B80000] hover:underline text-sm font-medium">
+          View All
         </Link>
       </div>
       

@@ -73,8 +73,8 @@ const Sidebar = () => {
                   <span className="text-[#B80000] font-bold text-sm mt-1">
                     {new Date(article.publishedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
-                  <Link href={`/article/${article.slug}`}>
-                    <a className="text-sm hover:text-[#B80000]">{article.title}</a>
+                  <Link href={`/article/${article.slug}`} className="text-sm hover:text-[#B80000]">
+                    {article.title}
                   </Link>
                 </div>
               ))}
@@ -83,8 +83,8 @@ const Sidebar = () => {
             <p className="text-sm text-gray-500">No latest updates available</p>
           )}
         </div>
-        <Link href="/category/latest">
-          <a className="text-[#B80000] hover:underline text-sm font-medium block mt-3 text-right">View All Updates</a>
+        <Link href="/category/latest" className="text-[#B80000] hover:underline text-sm font-medium block mt-3 text-right">
+          View All Updates
         </Link>
       </div>
 
@@ -104,8 +104,8 @@ const Sidebar = () => {
               {mostReadArticles.map((article, index) => (
                 <div key={article.id} className="flex items-start">
                   <span className="text-2xl font-bold text-gray-400 mr-3">{index + 1}</span>
-                  <Link href={`/article/${article.slug}`}>
-                    <a className="text-sm font-medium hover:text-[#B80000]">{article.title}</a>
+                  <Link href={`/article/${article.slug}`} className="text-sm font-medium hover:text-[#B80000]">
+                    {article.title}
                   </Link>
                 </div>
               ))}
@@ -127,10 +127,12 @@ const Sidebar = () => {
           ) : categories && categories.length > 0 ? (
             <>
               {categories.map((category) => (
-                <Link key={category.id} href={`/category/${category.slug}`}>
-                  <a className="px-3 py-1 bg-gray-200 rounded-full text-sm text-gray-800 hover:bg-[#B80000] hover:text-white transition-colors">
-                    {category.name}
-                  </a>
+                <Link 
+                  key={category.id} 
+                  href={`/category/${category.slug}`} 
+                  className="px-3 py-1 bg-gray-200 rounded-full text-sm text-gray-800 hover:bg-[#B80000] hover:text-white transition-colors"
+                >
+                  {category.name}
                 </Link>
               ))}
             </>

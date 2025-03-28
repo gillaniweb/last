@@ -115,10 +115,8 @@ const ArticlePage = () => {
               <article>
                 {/* Category */}
                 {category && (
-                  <Link href={`/category/${category.slug}`}>
-                    <a className="inline-block bg-[#B80000] text-white px-2 py-1 text-xs font-semibold rounded mb-3">
-                      {category.name}
-                    </a>
+                  <Link href={`/category/${category.slug}`} className="inline-block bg-[#B80000] text-white px-2 py-1 text-xs font-semibold rounded mb-3">
+                    {category.name}
                   </Link>
                 )}
                 
@@ -259,10 +257,8 @@ const ArticlePage = () => {
             ) : (
               <div className="bg-red-50 border border-red-200 p-8 rounded-lg text-center">
                 <p className="text-red-800">Article not found or has been removed.</p>
-                <Link href="/">
-                  <a className="text-[#B80000] hover:underline font-medium mt-2 inline-block">
-                    Return to homepage
-                  </a>
+                <Link href="/" className="text-[#B80000] hover:underline font-medium mt-2 inline-block">
+                  Return to homepage
                 </Link>
               </div>
             )}
