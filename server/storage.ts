@@ -2,7 +2,10 @@ import {
   articles, type Article, type InsertArticle,
   categories, type Category, type InsertCategory,
   authors, type Author, type InsertAuthor,
-  relatedStories, type RelatedStory, type InsertRelatedStory
+  relatedStories, type RelatedStory, type InsertRelatedStory,
+  users, type User, type InsertUser,
+  comments, type Comment, type InsertComment,
+  images, type Image, type InsertImage
 } from "@shared/schema";
 
 export interface IStorage {
@@ -12,7 +15,20 @@ export interface IStorage {
   createCategory(category: InsertCategory): Promise<Category>;
   
   // Article methods
-
+  getArticles(limit?: number, offset?: number): Promise<Article[]>;
+  getArticlesByCategory(categoryId: number, limit?: number, offset?: number): Promise<Article[]>;
+  getArticlesByAuthor(authorId: number, limit?: number, offset?: number): Promise<Article[]>;
+  getFeaturedArticles(limit?: number): Promise<Article[]>;
+  getBreakingNews(limit?: number): Promise<Article[]>;
+  getArticleBySlug(slug: string): Promise<Article | undefined>;
+  getArticleById(id: number): Promise<Article | undefined>;
+  createArticle(article: InsertArticle): Promise<Article>;
+  updateArticle(id: number, article: Partial<InsertArticle>): Promise<Article | undefined>;
+  deleteArticle(id: number): Promise<boolean>;
+  searchArticles(query: string, limit?: number): Promise<Article[]>;
+  getLatestArticles(limit?: number): Promise<Article[]>;
+  getMostReadArticles(limit?: number): Promise<Article[]>;
+  
   // User methods
   createUser(user: InsertUser): Promise<User>;
   getUserByEmail(email: string): Promise<User | undefined>;
@@ -27,20 +43,6 @@ export interface IStorage {
   createImage(image: InsertImage): Promise<Image>;
   getImagesByArticle(articleId: number): Promise<Image[]>;
   deleteImage(id: number): Promise<boolean>;
-
-  getArticles(limit?: number, offset?: number): Promise<Article[]>;
-  getArticlesByCategory(categoryId: number, limit?: number, offset?: number): Promise<Article[]>;
-  getArticlesByAuthor(authorId: number, limit?: number, offset?: number): Promise<Article[]>;
-  getFeaturedArticles(limit?: number): Promise<Article[]>;
-  getBreakingNews(limit?: number): Promise<Article[]>;
-  getArticleBySlug(slug: string): Promise<Article | undefined>;
-  getArticleById(id: number): Promise<Article | undefined>;
-  createArticle(article: InsertArticle): Promise<Article>;
-  updateArticle(id: number, article: Partial<InsertArticle>): Promise<Article | undefined>;
-  deleteArticle(id: number): Promise<boolean>;
-  searchArticles(query: string, limit?: number): Promise<Article[]>;
-  getLatestArticles(limit?: number): Promise<Article[]>;
-  getMostReadArticles(limit?: number): Promise<Article[]>;
   
   // Author methods
   getAuthors(): Promise<Author[]>;
@@ -57,22 +59,34 @@ export class MemStorage implements IStorage {
   private articles: Map<number, Article>;
   private authors: Map<number, Author>;
   private relatedStories: Map<number, RelatedStory>;
+  private users: Map<number, User>;
+  private comments: Map<number, Comment>;
+  private images: Map<number, Image>;
   
   private categoryId: number;
   private articleId: number;
   private authorId: number;
   private relatedStoryId: number;
+  private userId: number;
+  private commentId: number;
+  private imageId: number;
   
   constructor() {
     this.categories = new Map();
     this.articles = new Map();
     this.authors = new Map();
     this.relatedStories = new Map();
+    this.users = new Map();
+    this.comments = new Map();
+    this.images = new Map();
     
     this.categoryId = 1;
     this.articleId = 1;
     this.authorId = 1;
     this.relatedStoryId = 1;
+    this.userId = 1;
+    this.commentId = 1;
+    this.imageId = 1;
     
     // Initialize with default data
     this.initDefaultData();
@@ -164,7 +178,14 @@ export class MemStorage implements IStorage {
   
   async createArticle(article: InsertArticle): Promise<Article> {
     const id = this.articleId++;
-    const newArticle: Article = { ...article, id };
+    // Ensure required fields have default values if not provided
+    const newArticle: Article = { 
+      ...article, 
+      id,
+      isFeatured: article.isFeatured ?? 0,
+      isBreaking: article.isBreaking ?? 0,
+      publishedAt: article.publishedAt ?? new Date()
+    };
     this.articles.set(id, newArticle);
     return newArticle;
   }
@@ -180,85 +201,18 @@ export class MemStorage implements IStorage {
   
   async deleteArticle(id: number): Promise<boolean> {
     return this.articles.delete(id);
-
-  private users: Map<number, User>;
-  private comments: Map<number, Comment>;
-  private images: Map<number, Image>;
-  private userId: number;
-  private commentId: number;
-  private imageId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.comments = new Map();
-    this.images = new Map();
-    this.userId = 1;
-    this.commentId = 1;
-    this.imageId = 1;
-  }
-
-  // User methods
-  async createUser(user: InsertUser): Promise<User> {
-    const id = this.userId++;
-    const newUser: User = { ...user, id, createdAt: new Date() };
-    this.users.set(id, newUser);
-    return newUser;
-  }
-
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.email === email);
-  }
-
-  async getUserById(id: number): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  // Comment methods
-  async createComment(comment: InsertComment): Promise<Comment> {
-    const id = this.commentId++;
-    const newComment: Comment = { ...comment, id, createdAt: new Date() };
-    this.comments.set(id, newComment);
-    return newComment;
-  }
-
-  async getCommentsByArticle(articleId: number): Promise<Comment[]> {
-    return Array.from(this.comments.values())
-      .filter(comment => comment.articleId === articleId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-  }
-
-  async deleteComment(id: number): Promise<boolean> {
-    return this.comments.delete(id);
-  }
-
-  // Image methods
-  async createImage(image: InsertImage): Promise<Image> {
-    const id = this.imageId++;
-    const newImage: Image = { ...image, id, uploadedAt: new Date() };
-    this.images.set(id, newImage);
-    return newImage;
-  }
-
-  async getImagesByArticle(articleId: number): Promise<Image[]> {
-    return Array.from(this.images.values())
-      .filter(image => image.articleId === articleId)
-      .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
-  }
-
-  async deleteImage(id: number): Promise<boolean> {
-    return this.images.delete(id);
-  }
-
   }
   
   async searchArticles(query: string, limit = 10): Promise<Article[]> {
     const lowercaseQuery = query.toLowerCase();
     return Array.from(this.articles.values())
-      .filter(article => 
-        article.title.toLowerCase().includes(lowercaseQuery) || 
-        article.content.toLowerCase().includes(lowercaseQuery) ||
-        article.summary.toLowerCase().includes(lowercaseQuery)
-      )
+      .filter(article => {
+        return (
+          article.title.toLowerCase().includes(lowercaseQuery) ||
+          article.summary.toLowerCase().includes(lowercaseQuery) ||
+          article.content.toLowerCase().includes(lowercaseQuery)
+        );
+      })
       .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
       .slice(0, limit);
   }
@@ -270,9 +224,65 @@ export class MemStorage implements IStorage {
   }
   
   async getMostReadArticles(limit = 5): Promise<Article[]> {
-    // In a real app, this would be based on view counts
-    // For demo purposes, we'll just return the most recent articles
+    // In a real application, this would be based on read counts
+    // For this demo, we'll just return the latest articles
     return this.getLatestArticles(limit);
+  }
+  
+  // User methods
+  async createUser(user: InsertUser): Promise<User> {
+    const id = this.userId++;
+    const newUser: User = { 
+      ...user, 
+      id, 
+      createdAt: new Date(),
+      isAdmin: user.isAdmin ?? false
+    };
+    this.users.set(id, newUser);
+    return newUser;
+  }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.email === email);
+  }
+  
+  async getUserById(id: number): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+  
+  // Comment methods
+  async createComment(comment: InsertComment): Promise<Comment> {
+    const id = this.commentId++;
+    const newComment: Comment = { ...comment, id, createdAt: new Date() };
+    this.comments.set(id, newComment);
+    return newComment;
+  }
+  
+  async getCommentsByArticle(articleId: number): Promise<Comment[]> {
+    return Array.from(this.comments.values())
+      .filter(comment => comment.articleId === articleId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+  
+  async deleteComment(id: number): Promise<boolean> {
+    return this.comments.delete(id);
+  }
+  
+  // Image methods
+  async createImage(image: InsertImage): Promise<Image> {
+    const id = this.imageId++;
+    const newImage: Image = { ...image, id, uploadedAt: new Date() };
+    this.images.set(id, newImage);
+    return newImage;
+  }
+  
+  async getImagesByArticle(articleId: number): Promise<Image[]> {
+    return Array.from(this.images.values())
+      .filter(image => image.articleId === articleId);
+  }
+  
+  async deleteImage(id: number): Promise<boolean> {
+    return this.images.delete(id);
   }
   
   // Author methods
@@ -286,18 +296,24 @@ export class MemStorage implements IStorage {
   
   async createAuthor(author: InsertAuthor): Promise<Author> {
     const id = this.authorId++;
-    const newAuthor: Author = { ...author, id };
+    const newAuthor: Author = { 
+      ...author, 
+      id,
+      imageUrl: author.imageUrl ?? null,
+      bio: author.bio ?? null
+    };
     this.authors.set(id, newAuthor);
     return newAuthor;
   }
   
   // Related stories methods
   async getRelatedStories(articleId: number): Promise<Article[]> {
-    const relatedIds = Array.from(this.relatedStories.values())
+    const relatedStoryIds = Array.from(this.relatedStories.values())
       .filter(rs => rs.articleId === articleId)
       .map(rs => rs.relatedArticleId);
     
-    return relatedIds.map(id => this.articles.get(id)!).filter(Boolean);
+    return Array.from(this.articles.values())
+      .filter(article => relatedStoryIds.includes(article.id));
   }
   
   async addRelatedStory(relatedStory: InsertRelatedStory): Promise<RelatedStory> {
