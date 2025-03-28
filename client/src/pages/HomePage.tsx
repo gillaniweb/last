@@ -5,7 +5,6 @@ import TopStories from "@/components/TopStories";
 import CategorySection from "@/components/CategorySection";
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
-import CategoryToolbar from "@/components/CategoryToolbar";
 import { useQuery } from "@tanstack/react-query";
 import { Category } from "@shared/schema";
 
@@ -22,7 +21,6 @@ const HomePage = () => {
   return (
     <>
       <Header />
-      <CategoryToolbar />
       <BreakingNewsBanner />
       <main className="container mx-auto px-4 py-6">
         <FeaturedNewsCarousel />
